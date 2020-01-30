@@ -12,7 +12,9 @@ import (
 func main() {
 	// Initialize flags
 	var playlistName string
-	flag.StringVar(&playlistName, "name", "", "Playlist name")
+	var playlistDesc string
+	flag.StringVar(&playlistName, "name", "Manually Generated Playlist by Sneaky Crow", "Playlist name")
+	flag.StringVar(&playlistDesc, "desc", "A randomly generated playlist by sneakycrow's playlist generator", "Playlist description")
 	flag.Parse()
 	// Login and grab the client
 	client := login()
@@ -54,7 +56,7 @@ func main() {
 		RecommendedTracks = append(RecommendedTracks, recc.ID)
 	}
 	// Create a new playlist
-	newPlaylist, err := client.CreatePlaylistForUser(user.ID, playlistName, "a randomly generated playlist", true)
+	newPlaylist, err := client.CreatePlaylistForUser(user.ID, playlistName, playlistDesc, true)
 	check(err)
 	_, err = client.AddTracksToPlaylist(newPlaylist.ID, RecommendedTracks...)
 	check(err)
