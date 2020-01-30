@@ -14,9 +14,6 @@ func main() {
 	var playlistName string
 	flag.StringVar(&playlistName, "name", "", "Playlist name")
 	flag.Parse()
-	if len(playlistName) < 1 {
-		panic("--name flag is required")
-	}
 	// Login and grab the client
 	client := login()
 	// Grab the user
