@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -28,20 +29,18 @@ func login() *spotify.Client {
 	}
 	auth.SetAuthInfo(os.Getenv("SPOTIFY_ID"), os.Getenv("SPOTIFY_SECRET"))
 	// Next we start an HTTP server to listen for authentication
-	http.HandleFunc("/callback", completeAuth)
+	http.HandleFunc("/callback", handleAuth)
+	http.HandleFunc("/", handleIndex)
 	// start our server
 	go http.ListenAndServe(":8082", nil)
-
-	// create the auth url based on our env vars
-	url := auth.AuthURL(state)
-	fmt.Println("Please log in to Spotify by visiting the following page in your browser:", url)
+	fmt.Println("Please log in to Spotify by visiting the following page in your browser:", auth.AuthURL(state))
 	// wait for the auth channel to complete
 	client := <-ch
 	// use the client to make calls that require authorization
 	return client
 }
 
-func completeAuth(w http.ResponseWriter, r *http.Request) {
+func handleAuth(w http.ResponseWriter, r *http.Request) {
 	tok, err := auth.Token(state, r)
 	if err != nil {
 		http.Error(w, "Couldn't get token", http.StatusForbidden)
@@ -55,4 +54,16 @@ func completeAuth(w http.ResponseWriter, r *http.Request) {
 	client := auth.NewClient(tok)
 	fmt.Fprintf(w, "Login Completed! You may close this window")
 	ch <- &client
+}
+
+// HTMLLink is a struct for creating a link with a dynamic href attribute using html/templating
+type HTMLLink struct {
+	HREF string
+}
+
+func handleIndex(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.New("authentication url")
+	tmpl, _ = tmpl.Parse("<a href='{{.HREF}}'>Auth with Spotify</a>")
+	l := HTMLLink{HREF: auth.AuthURL(state)}
+	tmpl.Execute(w, l)
 }
