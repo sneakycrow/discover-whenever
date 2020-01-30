@@ -59,7 +59,9 @@ func main() {
 	// Create a new playlist
 	newPlaylist, err := client.CreatePlaylistForUser(user.ID, playlistName, "a randomly generated playlist", true)
 	check(err)
-	client.AddTracksToPlaylist(newPlaylist.ID, RecommendedTracks...)
+	_, err = client.AddTracksToPlaylist(newPlaylist.ID, RecommendedTracks...)
+	check(err)
+	fmt.Printf("New Playlist Created: %s!", playlistName)
 }
 
 func check(err error) {
